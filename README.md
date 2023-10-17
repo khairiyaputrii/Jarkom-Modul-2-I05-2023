@@ -1125,7 +1125,6 @@ service apache2 restart
 # No. 18
 ## Question
 > Untuk mengaksesnya buatlah autentikasi username berupa “Wayang” dan password “baratayudayyy” dengan yyy merupakan kode kelompok. Letakkan DocumentRoot pada /var/www/rjp.baratayuda.abimanyu.yyy.
-
 ## Solution
 
 # No. 19
