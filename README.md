@@ -125,8 +125,46 @@ apt-get install dnsutils -y
 apt-get install lynx -y
 ```
 - Web Server Nginx
+```
+apt install nginx php php-fpm -y
+```
 - Web Server Apache2
+```
+apt-get update
+apt-get install dnsutils -y
+apt-get install lynx -y
+apt-get install nginx -y
+service nginx start
+apt-get install apache2 -y
+apt-get install libapache2-mod-php7.0 -y
+service apache2 start
+apt-get install wget -y
+apt-get install unzip -y
+apt-get install php -y
+echo -e "\n\nPHP Version:"
+php -v
+```
 - Zip Download and Unzip Web Server Resources
+```
+wget -O '/var/www/abimanyu.I05.com' 'https://drive.usercontent.google.com/download?id=1a4V23hwK9S7hQEDEcv9FL14UkkrHc-Zc'
+unzip -o /var/www/abimanyu.I05.com -d /var/www/
+mv /var/www/abimanyu.yyy.com /var/www/abimanyu.I05
+rm /var/www/abimanyu.I05.com
+rm -rf /var/www/abimanyu.yyy.com
+
+wget -O '/var/www/parikesit.abimanyu.I05.com' 'https://drive.usercontent.google.com/download?id=1LdbYntiYVF_NVNgJis1GLCLPEGyIOreS'
+unzip -o /var/www/parikesit.abimanyu.I05.com -d /var/www/
+mv /var/www/parikesit.abimanyu.yyy.com /var/www/parikesit.abimanyu.I05
+rm /var/www/parikesit.abimanyu.I05.com
+rm -rf /var/www/parikesit.abimanyu.yyy.com
+mkdir /var/www/parikesit.abimanyu.I05/secret
+
+wget -O '/var/www/rjp.baratayuda.abimanyu.I05.com' 'https://drive.usercontent.google.com/download?id=1pPSP7yIR05JhSFG67RVzgkb-VcW9vQO6'
+unzip -o /var/www/rjp.baratayuda.abimanyu.I05.com -d /var/www/
+mv /var/www/rjp.baratayuda.abimanyu.yyy.com /var/www/rjp.baratayuda.abimanyu.I05
+rm /var/www/rjp.baratayuda.abimanyu.I05.com
+rm -rf /var/www/rjp.baratayuda.abimanyu.yyy.com
+```
 
 # No. 1
 ## Question
@@ -957,22 +995,137 @@ lynx parikesit.abimanyu.I05.com/secret
 # No. 15
 ## Question
 > Buatlah kustomisasi halaman error pada folder /error untuk mengganti error kode pada Apache. Error kode yang perlu diganti adalah 404 Not Found dan 403 Forbidden.
+
 ## Solution
+Add 2 error lines to the **parikesit.abimanyu.I05.com.conf** file:
+```
+ErrorDocument 404 /error/404.html
+ErrorDocument 403 /error/403.html
+```
+
+- On the Abimanyu node
+```
+echo -e '<VirtualHost *:80>
+  ServerAdmin webmaster@localhost
+  DocumentRoot /var/www/parikesit.abimanyu.I05
+  ServerName parikesit.abimanyu.I05.com
+  ServerAlias www.parikesit.abimanyu.I05.com
+
+  <Directory /var/www/parikesit.abimanyu.I05/public>
+          Options +Indexes
+  </Directory>
+
+  <Directory /var/www/parikesit.abimanyu.I05/secret>
+          Options -Indexes
+  </Directory>
+
+  Alias "/public" "/var/www/parikesit.abimanyu.I05/public"
+  Alias "/secret" "/var/www/parikesit.abimanyu.I05/secret"
+
+  ErrorDocument 404 /error/404.html
+  ErrorDocument 403 /error/403.html
+
+  ErrorLog ${APACHE_LOG_DIR}/error.log
+  CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>' > /etc/apache2/sites-available/parikesit.abimanyu.I05.com.conf
+
+service apache2 restart
+```
+To prove the custom error, we need to run these commands on the Client node:
+```
+lynx parikesit.abimanyu.I05.com/testerror
+lynx parikesit.abimanyu.I05.com/secret
+```
+
 
 # No. 16
 ## Question
 > Buatlah suatu konfigurasi virtual host agar file asset www.parikesit.abimanyu.yyy.com/public/js menjadi 
 www.parikesit.abimanyu.yyy.com/js
+
 ## Solution
+On file parikesit.abimanyu.I05.com.conf add an Alias line "/js" "/var/www/parikesit.abimanyu.I05/public/js" like this:
+```
+echo -e '<VirtualHost *:80>
+  ServerAdmin webmaster@localhost
+  DocumentRoot /var/www/parikesit.abimanyu.I05
+  ServerName parikesit.abimanyu.I05.com
+  ServerAlias www.parikesit.abimanyu.I05.com
+
+  <Directory /var/www/parikesit.abimanyu.I05/public>
+          Options +Indexes
+  </Directory>
+
+  <Directory /var/www/parikesit.abimanyu.I05/secret>
+          Options -Indexes
+  </Directory>
+
+  Alias "/public" "/var/www/parikesit.abimanyu.I05/public"
+  Alias "/secret" "/var/www/parikesit.abimanyu.I05/secret"
+  Alias "/js" "/var/www/parikesit.abimanyu.I05/public/js"
+
+  ErrorDocument 404 /error/404.html
+  ErrorDocument 403 /error/403.html
+
+  ErrorLog ${APACHE_LOG_DIR}/error.log
+  CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>' > /etc/apache2/sites-available/parikesit.abimanyu.I05.com.conf
+```
+and then restart the apache2 by running the command:
+```
+service apache2 restart
+```
 
 # No. 17
 ## Question
 > Agar aman, buatlah konfigurasi agar www.rjp.baratayuda.abimanyu.yyy.com hanya dapat diakses melalui port 14000 dan 14400.
+
 ## Solution
+After downloading from the drive, we can add ```<VirtualHost *:14000 *:14400>``` to virtual host by making configuration on file ```/etc/apache2/sites-available/rjp.baratayuda.abimanyu.I05.com.conf``` like this:
+```
+echo -e '<VirtualHost *:14000 *:14400>
+  ServerAdmin webmaster@localhost
+  DocumentRoot /var/www/rjp.baratayuda.abimanyu.I05
+  ServerName rjp.baratayuda.abimanyu.I05.com
+  ServerAlias www.rjp.baratayuda.abimanyu.I05.com
+
+  ErrorDocument 404 /error/404.html
+  ErrorDocument 403 /error/403.html
+
+  ErrorLog ${APACHE_LOG_DIR}/error.log
+  CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>' > /etc/apache2/sites-available/rjp.baratayuda.abimanyu.I05.com.conf
+```
+Then we need to add a **Listening Port** to file ```/etc/apache2/ports.conf```, like this:
+```
+echo -e '# If you just change the port or add more ports here, you will likely also
+# have to change the VirtualHost statement in
+# /etc/apache2/sites-enabled/000-default.conf
+
+Listen 80
+Listen 14000
+Listen 14400
+
+<IfModule ssl_module>
+        Listen 443
+</IfModule>
+
+<IfModule mod_gnutls.c>
+        Listen 443
+</IfModule>
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet' > /etc/apache2/ports.conf
+```
+Then, we have to activate and restart the Apache2 server
+```
+a2ensite rjp.baratayuda.abimanyu.I05.com.conf
+service apache2 restart
+```
 
 # No. 18
 ## Question
 > Untuk mengaksesnya buatlah autentikasi username berupa “Wayang” dan password “baratayudayyy” dengan yyy merupakan kode kelompok. Letakkan DocumentRoot pada /var/www/rjp.baratayuda.abimanyu.yyy.
+
 ## Solution
 
 # No. 19
