@@ -1162,9 +1162,82 @@ service apache2 restart
 # No. 19
 ## Question
 > Buatlah agar setiap kali mengakses IP dari Abimanyu akan secara otomatis dialihkan ke www.abimanyu.yyy.com (alias)
+
 ## Solution
+To do this question, we need to add ```Redirect``` to www.abimanyu.I05.com. We can add this configuration to ```000-default.conf``` .
+
+```
+echo -e '<VirtualHost *:80>
+    ServerAdmin webmaster@abimanyu.I05.com
+    DocumentRoot /var/www/html
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+    Redirect / http://www.abimanyu.I05.com/
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
+
+apache2ctl configtest
+
+service apache2 restart
+```
 
 # No. 20
 ## Question
 > Karena website www.parikesit.abimanyu.yyy.com semakin banyak pengunjung dan banyak gambar gambar random, maka ubahlah request gambar yang memiliki substring “abimanyu” akan diarahkan menuju abimanyu.png.
+
 ## Solution
+To answer this question, we need to set the URL mapping with the help of ```a2enmod rewrite```.
+
+First we need to run this command:
+```
+a2enmod rewrite
+```
+After that, we carry out the settings for the Rewrite conditions, like this:
+```
+echo 'RewriteEngine On
+RewriteCond %{REQUEST_URI} ^/public/images/(.*)(abimanyu)(.*\.(png|jpg))
+RewriteCond %{REQUEST_URI} !/public/images/abimanyu.png
+RewriteRule abimanyu http://parikesit.abimanyu.I05.com/public/images/abimanyu.png$1 [L,R=301]' > /var/www/parikesit.abimanyu.I05/.htaccess
+```
+After that there is a virtual host configuration as follows:
+
+```
+echo -e '<VirtualHost *:80>
+  ServerAdmin webmaster@localhost
+  DocumentRoot /var/www/parikesit.abimanyu.I05
+
+  ServerName parikesit.abimanyu.I05.com
+  ServerAlias www.parikesit.abimanyu.I05.com
+
+  <Directory /var/www/parikesit.abimanyu.I05/public>
+          Options +Indexes
+  </Directory>
+
+  <Directory /var/www/parikesit.abimanyu.I05/secret>
+          Options -Indexes
+  </Directory>
+
+  <Directory /var/www/parikesit.abimanyu.I05>
+          Options +FollowSymLinks -Multiviews
+          AllowOverride All
+  </Directory>
+
+  Alias "/public" "/var/www/parikesit.abimanyu.I05/public"
+  Alias "/secret" "/var/www/parikesit.abimanyu.I05/secret"
+  Alias "/js" "/var/www/parikesit.abimanyu.I05/public/js"
+
+  ErrorDocument 404 /error/404.html
+  ErrorDocument 403 /error/403.html
+
+  ErrorLog ${APACHE_LOG_DIR}/error.log
+  CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>' > /etc/apache2/sites-available/parikesit.abimanyu.I05.com.conf
+```
+Last, we need to run this command:
+```
+a2enmod rewrite
+service apache2 restart
+```
+# Obstacle
+- No 9 is pretty confusing, so we were stuck on that number.
