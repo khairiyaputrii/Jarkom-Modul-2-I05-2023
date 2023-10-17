@@ -159,7 +159,7 @@ zone "arjuna.I05.com" {
         file "/etc/bind/jarkom/arjuna.I05.com";
 };
 ```
-Then we run the code below on the console:
+Then we run the command below on the console:
 ```
 mkdir /etc/bind/jarkom
 cp /etc/bind/db.local /etc/bind/jarkom/arjuna.I05.com
@@ -186,16 +186,109 @@ Then we restart the bind using the following code:
 ```
 service bind9 restart
 ```
+To test whether it works or not, we run these commands on Nakula (or Sadewa):
+
+```
+ping arjuna.I05.com -c 3
+ping www.arjuna.I05.com -c 3
+```
+- With www
+![pingwwwarjuna](images/pingwwwarjuna.jpeg)
+
+- Without www
+![pingarjuna](images/pingarjuna.jpeg)
 
 # No. 3
 ## Question
 > Dengan cara yang sama seperti soal nomor 2, buatlah website utama dengan akses ke abimanyu.yyy.com dan alias www.abimanyu.yyy.com.
+
 ## Solution
+- Node Yudhistira
+```
+nano /etc/bind/named.conf.local
+```
+Add some changes into the file like this:
+```
+zone "abimanyu.I05.com" {
+        type master;
+        file "/etc/bind/jarkom/abimanyu.I05.com";
+};
+```
+Then we run the command below on the console:
+```
+cp /etc/bind/db.local /etc/bind/jarkom/abimanyu.I05.com
+nano /etc/bind/jarkom/abimanyu.I05.com
+```
+Add some changes into the **abimanyu.I05.com** file like this:
+```
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     abimanyu.I05.com. root.abimanyu.I05.com. (
+                     2022100601         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@               IN      NS      abimanyu.I05.com.
+@               IN      A       10.61.2.2
+www             IN      CNAME   abimanyu.I05.com.
+```
+Then we restart the bind using the following code:
+```
+service bind9 restart
+```
+To test whether it works or not, we run these commands on Nakula (or Sadewa):
+
+```
+ping abimanyu.I05.com -c 3
+ping www.abimanyu.I05.com -c 3
+```
+- With www
+![pingwwwabimanyu](images/pingwwwabimanyu.jpeg)
+
+- Without www
+![pingabimanyu](images/pingabimanyu.jpeg)
 
 # No. 4
 ## Question
 > Kemudian, karena terdapat beberapa web yang harus di-deploy, buatlah subdomain parikesit.abimanyu.yyy.com yang diatur DNS-nya di Yudhistira dan mengarah ke Abimanyu.
+
 ## Solution
+- Node Yudhistira
+```
+nano /etc/bind/jarkom/abimanyu.I05.com
+```
+Then make some changes on the **abimanyu.I05.com** file like this:
+
+```
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     abimanyu.I05.com. root.abimanyu.I05.com. (
+                     2022100601         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@               IN      NS      abimanyu.I05.com.
+@               IN      A       10.61.2.2
+www             IN      CNAME   abimanyu.I05.com.
+parikesit       IN      A       10.61.3.3
+```
+Then we run this commands on the Yudhistira console to restart the bind:
+```
+service bind9 restart
+```
+And then we run this command on Nakula (or Sadewa) to see if it works:
+```
+ping parikesit.abimanyu.I05.com -c 3
+```
+![pingparikesit](images/pingparikesitabimanyu.jpeg)
 
 # No. 5
 ## Question
