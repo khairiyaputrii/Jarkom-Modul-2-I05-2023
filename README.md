@@ -580,13 +580,21 @@ service bind9 restart
 ## Question
 > Arjuna merupakan suatu Load Balancer Nginx dengan tiga worker (yang juga menggunakan nginx sebagai webserver) yaitu Prabakusuma, Abimanyu, dan Wisanggeni. Lakukan deployment pada masing-masing worker.
 ## Solution
+To set up a load balancer, we can configure the Arjuna node as the load balancer, and the nodes: Prabakusuma, Abimanyu, and Wisanggeni as its workers. This configuration can be put into a single bash script, but differentiated for each of their functions.
+
 - Node Arjuna
+
+On the Arjuna node, you can perform the following configuration (Some commands have been previously mentioned in the Preparation section, but are reiterated here).
+
 ```
 apt-get update
 apt-get install bind9 nginx
 apt-get install dnsutils -y
 apt-get install lynx -y
 ```
+
+After that, for the load balancer on the Arjuna node, it can be set up through the following configuration.
+
 ```
 echo '
  upstream myweb  {
@@ -597,7 +605,7 @@ echo '
 
  server {
  	listen 80;
- 	server_name arjuna.f07.com www.arjuna.I05.com;
+ 	server_name arjuna.I05.com www.arjuna.I05.com;
 
  	location / {
  	proxy_pass http://myweb;
@@ -608,7 +616,12 @@ echo '
  ln -s /etc/nginx/sites-available/lb-arjuna.I05 /etc/nginx/sites-enabled
  service nginx restart
 ```
+
+
 - Node Prabukusuma
+
+For the worker node, on the Prabakusuma node, perform the following configuration.
+
 ```
 echo -e '
 nameserver 192.168.122.1
@@ -662,7 +675,11 @@ service php7.0-fpm start
 rm /etc/nginx/sites-enabled/default
 service nginx restart
 ```
+
 - Node Abimanyu
+
+For the worker node, on the Abimanyu node, perform the following configuration.
+
 ```
 echo -e '
 nameserver 192.168.122.1
@@ -717,6 +734,9 @@ rm /etc/nginx/sites-enabled/default
 service nginx restart
 ```
 - Node Wisanggani
+
+For the worker node, on the Wisanggeni node, perform the following configuration.
+
 ```
 echo -e '
 nameserver 192.168.122.1
@@ -775,6 +795,8 @@ service nginx restart
 ## Question
 > Kemudian gunakan algoritma Round Robin untuk Load Balancer pada Arjuna. Gunakan server_name pada soal nomor 1. Untuk melakukan pengecekan akses alamat web tersebut kemudian pastikan worker yang digunakan untuk menangani permintaan akan berganti ganti secara acak. Untuk webserver di masing-masing worker wajib berjalan di port 8001-8003. Contoh: **Prabakusuma:8001, Abimanyu:8002, Wisanggeni:8003**
 ## Solution
+To configure the Arjuna load balancer, you can modify the configuration as follows. Here, :800N is added to each line of its worker servers, with N representing numbers 1 to 3 to differentiate the ports for each worker.
+
 ```
 echo '
  upstream myweb  {
@@ -795,6 +817,11 @@ echo '
 ln -s /etc/nginx/sites-available/lb-arjuna.I05 /etc/nginx/sites-enabled
 service nginx restart
 ```
+
+
+
+As for the workers, there is additional information regarding the ports they use. In this configuration, you can see it in the line ```listen 800N```, where N corresponds to the port number for each worker. Additionally, one ```echo``` command (the third echo) is added to display an additional message about the port used by each worker.
+
 ```
 echo '
  <?php
@@ -848,6 +875,9 @@ service nginx restart
 > Selain menggunakan Nginx, lakukan konfigurasi Apache Web Server pada worker Abimanyu dengan web server www.abimanyu.yyy.com. Pertama dibutuhkan web server dengan DocumentRoot pada /var/www/abimanyu.yyy
 ## Solution
 - Node Abimanyu
+
+We will need several setup configurations if we haven't set up the Abimanyu node yet, as follows
+
 ```
 apt-get update
 apt-get install apache2 -y
@@ -857,6 +887,9 @@ apt-get install wget -y
 apt-get install unzip -y
 apt-get install php -y
 ```
+
+then, run these commands
+
 ```
 wget -O '/var/www/abimanyu.I05.com' 'https://drive.usercontent.google.com/download?id=1a4V23hwK9S7hQEDEcv9FL14UkkrHc-Zc'
 unzip -o /var/www/abimanyu.I05.com -d /var/www/
@@ -864,6 +897,9 @@ mv /var/www/abimanyu.yyy.com /var/www/abimanyu.I05
 rm /var/www/abimanyu.I05.com
 rm -rf /var/www/abimanyu.yyy.com
 ```
+
+- Node Abimanyu
+
 ```
 cp /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/abimanyu.I05.com.conf
 
@@ -884,9 +920,15 @@ a2ensite abimanyu.I05.com.conf
 
 service apache2 restart
 ```
+
+Then, to display it on the client, we can use the installed Lynx
+
 ```
 apt-get install lynx -y
 ```
+
+Afterward, run it directly with the following command.
+
 ```
 lynx abimanyu.I05.com
 ```
@@ -895,6 +937,9 @@ lynx abimanyu.I05.com
 ## Question
 > Setelah itu ubahlah agar url www.abimanyu.yyy.com/index.php/home menjadi www.abimanyu.yyy.com/home.
 ## Solution
+
+To resolve this issue, you will need the ```Directory``` as a tool to rewrite Indexes in order to create an Alias for the domain. The implementation is as follows.
+
 ```
 <Directory /var/www/abimanyu.I05/index.php/home>
   Options +Indexes
@@ -922,6 +967,9 @@ echo -e '<VirtualHost *:80>
 
 service apache2 restart
 ```
+
+running the following command on the Nakula or Sadewa Node.
+
 - Node Nakula or Sadewa
 ```
 lynx abimanyu.I05.com/home
@@ -930,6 +978,9 @@ lynx abimanyu.I05.com/home
 ## Question
 > Selain itu, pada subdomain www.parikesit.abimanyu.yyy.com, DocumentRoot disimpan pada /var/www/parikesit.abimanyu.yyy
 ## Solution
+
+In addressing this issue, we initially need several setup configurations as follows:
+
 ```
 wget -O '/var/www/parikesit.abimanyu.I05.com' 'https://drive.usercontent.google.com/download?id=1LdbYntiYVF_NVNgJis1GLCLPEGyIOreS'
 unzip -o /var/www/parikesit.abimanyu.I05.com -d /var/www/
@@ -938,6 +989,9 @@ rm /var/www/parikesit.abimanyu.I05.com
 rm -rf /var/www/parikesit.abimanyu.yyy.com
 mkdir /var/www/parikesit.abimanyu.I05/secret
 ```
+
+Followed by configuring the ```ServerName``` and ```ServerAlias```.
+
 ```
 echo -e '<VirtualHost *:80>
   ServerAdmin webmaster@localhost
@@ -953,6 +1007,8 @@ a2ensite parikesit.abimanyu.I05.com.conf
 
 service apache2 restart
 ```
+Then, to verify it, enter the following command on the Nakula or Sadewa Node.
+
 ```
 lynx parikesit.abimanyu.I05.com
 ```
@@ -961,6 +1017,7 @@ lynx parikesit.abimanyu.I05.com
 ## Question
 > Pada subdomain tersebut folder /public hanya dapat melakukan directory listing sedangkan pada folder /secret tidak dapat diakses (403 Forbidden)
 ## Solution
+In addressing this issue, it's quite simple. The principle is that to allow the public to perform directory listing, we use 'Options +Indexes.' On the other hand, to forbid access to a folder, we can use 'Options -Indexes.
 - Node Abimanyu
 ```
 echo -e '<VirtualHost *:80>
@@ -986,6 +1043,9 @@ echo -e '<VirtualHost *:80>
 
 service apache2 restart
 ```
+
+Then, to verify it, enter the following command on the Nakula or Sadewa Node.
+
 ```
 lynx parikesit.abimanyu.I05.com/public
 lynx parikesit.abimanyu.I05.com/secret
