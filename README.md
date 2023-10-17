@@ -250,6 +250,7 @@ apt-get install dnsutils
 
 host -t PTR 10.61.3.3
 ```
+![reversedomain](images/reversedomain.png)
 
 
 # No. 6
@@ -324,8 +325,6 @@ and try to ping abimanyu.I05.com
 ```
 ping abimanyu.I05.com
 ```
-
-
 
 # No. 7
 ## Question
@@ -406,8 +405,12 @@ ping baratayuda.abimanyu.I05.com
 
 OR
 
-ping www.baratayuda.I05.com
+ping www.baratayuda.abimanyu.I05.com
 ```
+![pingbaratayuda.abimanyu.I05.com.png](images/pingbaratayuda.abimanyu.I05.com.png)
+![pingwww.baratayuda.abimanyu.I05.com.png](images/pingwww.baratayuda.abimanyu.I05.com.png)
+
+
 
 # No. 8
 ## Question
@@ -438,6 +441,9 @@ www.rjp IN      CNAME   rjp.baratayuda.abimanyu.I05.com.
 ```
 service bind9 restart
 ```
+![pingrjp.baratayuda.abimanyu.I05.com.png](images/pingrjp.baratayuda.abimanyu.I05.com.png)
+![pingwww.rjp.baratayuda.abimanyu.com.png](images/pingwww.rjp.baratayuda.abimanyu.com.png)
+
 
 # No. 9
 ## Question
