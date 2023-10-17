@@ -201,21 +201,243 @@ service bind9 restart
 ## Question
 > Buat juga reverse domain untuk domain utama. (Abimanyu saja yang direverse)
 ## Solution
+- Node Yudhistira
+edit file /etc/bind/named.conf.local
+```
+nano /etc/bind/named.conf.local
+
+```
+Then add the following configuration to file named.conf.local
+```
+zone "3.61.10.in-addr.arpa" {
+    type master;
+    file "/etc/bind/jarkom/3.61.10.in-addr.arpa";
+};
+```
+copy file to the db.local in path /etc/bind inside jarkom folder and rename to 3.61.10.in-addr.arpa which The first 3 bytes of the IP Abimanyu reversed in order of writing.
+```
+cp /etc/bind/db.local /etc/bind/jarkom/3.61.10.in-addr.arpa
+```
+edit file /etc/bind/jarkom/3.61.10.in-addr.arpa
+```
+nano /etc/bind/jarkom/3.61.10.in-addr.arpa
+```
+```
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     abimanyu.I05.com. root.abimanyu.I05.com. (
+                     2022100601         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+3.61.10.in-addr.arpa.   IN      NS      abimanyu.I05.com.
+3                       IN      PTR     abimanyu.I05.com.
+
+```
+then restart bind9
+```
+service bind9 restart
+```
+- Node Nakula
+To check whether the configuration is correct or not, execute the following command in node Nakula
+```
+apt-get update
+apt-get install dnsutils
+
+host -t PTR 10.61.3.3
+```
+
 
 # No. 6
 ## Question
 > Agar dapat tetap dihubungi ketika DNS Server Yudhistira bermasalah, buat juga Werkudara sebagai DNS Slave untuk domain utama.
 ## Solution
+- Node Yudhistira
+edit file /etc/bind/named.conf.local in node Yudhistira
+```
+nano /etc/bind/named.conf.local
+```
+```
+zone "arjuna.I05.com" {
+        type master;
+        notify yes;
+        also-notify { 10.61.2.3; }; // Masukan IP Werkudara
+        allow-transfer { 10.61.2.3; }; // Masukan IP Werkudara
+        file "/etc/bind/jarkom/arjuna.I05.com";
+};
+
+zone "abimanyu.I05.com" {
+        type master;
+        notify yes;
+        also-notify { 10.61.2.3; }; // Masukan IP Werkudara
+        allow-transfer { 10.61.2.3; }; // Masukan IP Werkudara
+        file "/etc/bind/jarkom/abimanyu.I05.com";
+};
+```
+then restart bind9
+```
+service bind9 restart
+```
+
+- Node Werkudara
+Run these commands
+```
+apt-get update
+apt-get install bind9 -y
+```
+edit file /etc/bind/named.conf.local 
+```
+//
+// Do any local configuration here
+//
+
+// Consider adding the 1918 zones here, if they are not used in your
+// organization
+//include "/etc/bind/zones.rfc1918";
+
+zone "arjuna.I05.com" {
+    type slave;
+    masters { 10.61.2.2; }; // Masukan IP Yudhistira
+    file "/var/lib/bind/arjuna.I05.com";
+};
+
+zone "abimanyu.I05.com" {
+    type slave;
+    masters { 10.61.2.2; }; // Masukan IP Yudhistira
+    file "/var/lib/bind/abimanyu.I05.com";
+};
+```
+then restart bind9
+```
+service bind9 restart
+```
+then stop bind9 in node Yudhistira
+```
+service bind9 stop
+```
+- Node Nakula
+and try to ping abimanyu.I05.com
+```
+ping abimanyu.I05.com
+```
+
+
 
 # No. 7
 ## Question
 > Seperti yang kita tahu karena banyak sekali informasi yang harus diterima, buatlah subdomain khusus untuk perang yaitu baratayuda.abimanyu.yyy.com dengan alias www.baratayuda.abimanyu.yyy.com yang didelegasikan dari Yudhistira ke Werkudara dengan IP menuju ke Abimanyu dalam folder Baratayuda.
 ## Solution
+edit /etc/bind/jarkom/abimanyu.I05.com in node Yudhistira
+- Node Yudhistira
+```
+nano /etc/bind/jarkom/abimanyu.I05.com
+```
+```
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     abimanyu.I05.com. root.abimanyu.I05.com. (
+                     2022100601         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@               IN      NS      abimanyu.I05.com.
+@               IN      A       10.61.2.2
+www             IN      CNAME   abimanyu.I05.com.
+parikesit       IN      A       10.61.3.3
+ns1             IN      A       10.61.2.3
+baratayuda      IN      NS      ns1
+```
+then restart bind9
+```
+service bind9 restart
+```
+
+- Werkudara
+edit /etc/bind/named.conf.local
+```
+nano /etc/bind/named.conf.local
+```
+```
+zone "baratayuda.abimanyu.I05.com" {
+    type master;
+    file "/etc/bind/baratayuda/baratayuda.abimanyu.I05.com";
+};
+```
+make a folder baratayuda for baratayuda.abimanyu.I05.com
+```
+mkdir /etc/bind/baratayuda
+```
+then edit /etc/bind/baratayuda/baratayuda.abimanyu.I05.com as follow
+```
+nano /etc/bind/baratayuda/baratayuda.abimanyu.I05.com
+```
+```
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     baratayuda.abimanyu.I05.com. root.baratayuda.abimanyu.I$
+                     2022100601         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      baratayuda.abimanyu.I05.com.
+@       IN      A       10.61.3.3
+www     IN      CNAME   baratayuda.abimanyu.I05.com.
+```
+then restart bind9
+```
+service bind9 restart
+```
+- Node Nakula
+try to ping baratayuda.abimanyu.I05.com or ping www.baratayuda.I05.com in node Nakula
+```
+ping baratayuda.abimanyu.I05.com
+
+OR
+
+ping www.baratayuda.I05.com
+```
 
 # No. 8
 ## Question
 > Untuk informasi yang lebih spesifik mengenai Ranjapan Baratayuda, buatlah subdomain melalui Werkudara dengan akses rjp.baratayuda.abimanyu.yyy.com dengan alias www.rjp.baratayuda.abimanyu.yyy.com yang mengarah ke Abimanyu.
 ## Solution
+- Node Werkudara
+```
+nano /etc/bind/baratayuda/baratayuda.abimanyu.I05.com
+```
+```
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     baratayuda.abimanyu.I05.com. root.baratayuda.abimanyu.I$
+                     2022100601         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      baratayuda.abimanyu.I05.com.
+@       IN      A       10.61.3.3
+www     IN      CNAME   baratayuda.abimanyu.I05.com.
+rjp     IN      A       10.61.3.3
+www.rjp IN      CNAME   rjp.baratayuda.abimanyu.I05.com.
+```
+```
+service bind9 restart
+```
 
 # No. 9
 ## Question
