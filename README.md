@@ -1125,7 +1125,39 @@ service apache2 restart
 # No. 18
 ## Question
 > Untuk mengaksesnya buatlah autentikasi username berupa “Wayang” dan password “baratayudayyy” dengan yyy merupakan kode kelompok. Letakkan DocumentRoot pada /var/www/rjp.baratayuda.abimanyu.yyy.
+
 ## Solution
+Add settings like ```AuthType, AuthName, AuthUserFile, dan Require valid-user``` on the ```<Directory /x> ... </Directory>``` inside ```/etc/apache2/sites-available/rjp.baratayuda.abimanyu.I05.com.conf``` file like this:
+```
+echo -e '<VirtualHost *:14000 *:14400>
+  ServerAdmin webmaster@localhost
+  DocumentRoot /var/www/rjp.baratayuda.abimanyu.I05
+  ServerName rjp.baratayuda.abimanyu.I05.com
+  ServerAlias www.rjp.baratayuda.abimanyu.I05.com
+
+  <Directory /var/www/rjp.baratayuda.abimanyu.I05>
+          AuthType Basic
+          AuthName "Restricted Content"
+          AuthUserFile /etc/apache2/.htsecure
+          Require valid-user
+  </Directory>
+
+  ErrorDocument 404 /error/404.html
+  ErrorDocument 403 /error/403.html
+
+  ErrorLog ${APACHE_LOG_DIR}/error.log
+  CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>' > /etc/apache2/sites-available/rjp.baratayuda.abimanyu.I05.com.conf
+```
+After that, we can run this command:
+```
+htpasswd -c -b /etc/apache2/.htsecure Wayang baratayudaI05
+```
+And then we can activate and restart the Apache2 server
+```
+a2ensite rjp.baratayuda.abimanyu.I05.com.conf
+service apache2 restart
+```
 
 # No. 19
 ## Question
